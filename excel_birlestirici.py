@@ -6,20 +6,21 @@ from datetime import datetime
 st.set_page_config(page_title="Stil Diva - Depo Sihirbazı", layout="centered")
 
 st.title("Stil Diva - Depo Sihirbazı")
-st.write("Lütfen raf excelinizi ve sipariş excelinizi yükleyiniz.")
+st.write("Lütfen günlük sipariş excelinizi yükleyiniz. Raf referans dosyası sisteme dahildir.")
 
-st.header("1. Dosyaları Yükleyin")
+# --- DEĞİŞİKLİK: Sadece tek bir dosya yükleme alanı bırakıldı. ---
+st.header("1. Günlük Sipariş Excelini Yükleyin")
+gunluk_excel = st.file_uploader("Pixa Sipariş Excelini Yükleyin", type=["xlsx", "xls"])
 
-referans_excel = st.file_uploader("1) Raf Master Excelini Yükleyin", type=["xlsx", "xls"])
-gunluk_excel = st.file_uploader("2) Pixa Sipariş Excelini Yükleyin", type=["xlsx", "xls"])
-
-if referans_excel and gunluk_excel:
-    st.success("İki dosya da başarıyla yüklendi. İşlem için butona tıklayın.")
+# --- DEĞİŞİKLİK: Koşul sadece günlük excelin yüklenmesini kontrol ediyor. ---
+if gunluk_excel:
+    st.success("Sipariş dosyası başarıyla yüklendi. İşlem için butona tıklayın.")
 
     if st.button("İşlemi Başlat ve Yeni Excel'i Oluştur"):
         try:
-            # <<< ÇÖZÜM: Excel dosyaları, stil hatalarını göz ardı eden "calamine" motoruyla okunuyor. >>>
-            df_referans = pd.read_excel(referans_excel, engine="calamine")
+            # --- DEĞİŞİKLİK: Referans excel artık doğrudan dosyadan okunuyor. ---
+            # Bu satırın çalışması için 'raf_master.xlsx' dosyasının kodla aynı klasörde olması gerekir.
+            df_referans = pd.read_excel('raf_master.xlsx', engine="calamine")
             df_gunluk = pd.read_excel(gunluk_excel, engine="calamine")
 
             # Referans Excel'den gerekli sütunlar seçiliyor.
@@ -58,7 +59,6 @@ if referans_excel and gunluk_excel:
             st.dataframe(df_sonuc)
 
             output = io.BytesIO()
-            # Yazma işlemi için varsayılan motor (openpyxl) kullanılır.
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 df_sonuc.to_excel(writer, index=False, sheet_name='Birlestirilmis_Liste')
             
